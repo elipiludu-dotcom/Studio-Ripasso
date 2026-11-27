@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#D9822B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Studio Ripasso</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9e4d6; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; color: #3d2a14; }
+  .app { max-width: 640px; margin: 0 auto; min-height: 100vh; background: #FBF6EA; padding: 14px; display: flex; flex-direction: column; }
+  .banner { background: #D9822B; color: #fff; text-align: center; border-radius: 10px; padding: 8px 12px; font-size: 20px; font-weight: 800; letter-spacing: 1px; margin-bottom: 12px; }
+  main { flex: 1; }
+  .box { background: #fff; border: 2px solid #CD9A0D; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+  .box.center { text-align: center; padding: 24px 14px; }
+  h2 { margin: 6px 0 10px; color: #D9822B; font-size: 22px; }
+  p { line-height: 1.5; margin: 8px 0; }
+  .riass { font-size: 17px; }
+  .small { font-size: 13px; color: #a8957a; }
+  .err { color: #C0392B; font-weight: 700; }
+  .ok { color: #3E7F5D; font-weight: 700; }
+  .hidden { display: none !important; }
+  .step { display: block; font-weight: 800; margin: 12px 0 6px; }
+  .step:first-child { margin-top: 0; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { border: 3px solid var(--c); background: #fff; color: #3d2a14; border-radius: 999px; padding: 8px 14px; font-size: 15px; font-weight: 800; cursor: pointer; font-family: inherit; }
+  .chip.on { background: var(--c); color: #fff; }
+
+  textarea { width: 100%; min-height: 130px; border: 2px solid #E8D9A8; border-radius: 10px; padding: 10px; font-family: inherit; font-size: 16px; color: #3d2a14; resize: vertical; }
+  textarea:focus, input:focus { outline: none; border-color: #D9822B; }
+  input[type=password], input[type=number] { border: 2px solid #E8D9A8; border-radius: 8px; padding: 10px; font-family: inherit; font-size: 18px; width: 140px; }
+
+  button { font-family: inherit; font-weight: 800; border: 0; border-radius: 12px; padding: 13px 16px; font-size: 16px; cursor: pointer; color: #fff; background: #D9822B; }
+  button.sec { background: #eadfc7; color: #3d2a14; }
+  button.no { background: #DB5742; }
+  button.big { width: 100%; margin-top: 12px; }
+  button:disabled { background: #cfc7b3; color: #fff; cursor: not-allowed; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; align-items: center; }
+  .att { display: inline-flex; align-items: center; gap: 6px; background: #FFF3D0; border: 2px solid #E8B93A; border-radius: 999px; padding: 4px 6px 4px 12px; font-size: 14px; font-weight: 700; }
+  .att button { padding: 2px 9px; border-radius: 999px; font-size: 14px; background: #E8B93A; color: #3a2d00; }
+
+  .badge { display: inline-block; color: #fff; font-weight: 800; border-radius: 999px; padding: 4px 14px; font-size: 13px; }
+
+  footer { text-align: center; padding: 10px 0 4px; }
+  .link { background: none; color: #a8957a; font-size: 13px; padding: 6px 10px; text-decoration: underline; font-weight: 700; }
+
+  .modal { position: fixed; inset: 0; background: rgba(61,42,20,.55); display: flex; align-items: center; justify-content: center; padding: 14px; z-index: 10; }
+  .modalbox { background: #FBF6EA; border: 3px solid #3d2a14; border-radius: 14px; padding: 14px; width: 100%; max-width: 420px; }
+  .mhead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 18px; }
+  .x { background: #eadfc7; color: #3d2a14; padding: 4px 11px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="banner">STUDIO RIPASSO</div>
+  <main id="main">Carico…</main>
+  <footer>
+    <button id="btnAdulto" class="link">🔒 Area adulto</button>
+    <button id="btnEsci" class="link hidden">Esci</button>
+  </footer>
+</div>
+
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modalbox">
+    <div class="mhead"><b>🔒 Area adulto</b><button id="mclose" class="x" aria-label="Chiudi">✕</button></div>
+    <div id="mbody"></div>
+  </div>
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ---- Impostazioni (nessun segreto qui: la chiave dell'IA sta nel proxy) ---- */
+  var CONFIG = {
+    PROXY_URL: 'https://script.google.com/macros/s/AKfycbynxUWVqU46YhOA6So0diCQkU_UVvuwPh9VL5K6P56lLFO9geqCCwDsu8susA3qwRs0/exec',
+    CLIENT_ID: '391770471090-hbrpdpb88g4het6gtrraas6bvbejjd9l.apps.googleusercontent.com'
+  };
+  var COLORI = {
+    'Antologia': '#7B4B94', 'Aritmetica': '#7A4BB3', 'Francese': '#3CA0D8', 'Geografia': '#2E8B57',
+    'Geometria': '#4F5BD5', 'Grammatica': '#2E6DA4', 'Inglese': '#2F5BB8', 'Letteratura': '#8C2F39',
+    'Scienze': '#E8782A', 'Storia': '#1F6F6B', "Storia dell'arte": '#3F7D5A', 'Tecnologia': '#5B6B7A'
+  };
+  var MAX_ALLEGATI = 4;
+
+  function $(id) { return document.getElementById(id); }
+  var main = $('main');
+
+  /* ---- memoria di sessione (se il browser la blocca, si va avanti senza) ---- */
+  function leggi(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
+  function scrivi(k, v) { try { if (v == null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) {} }
+
+  var idToken = leggi('idt');
+  var tokenOra = Number(leggi('idt_t') || 0);
+  var stato = null;
+  var pinCorrente = null;
+  var bozza = nuovaBozza();
+
+  function nuovaBozza() { return { materia: null, testo: '', allegati: [] }; }
+  function pad(n) { return ('00' + n).slice(-3); }
+
+  /* ---- costruzione sicura degli elementi (nessun testo esterno diventa HTML) ---- */
+  function h(tag, attrs) {
+    var el = document.createElement(tag);
+    var a = attrs || {};
+    Object.keys(a).forEach(function (k) {
+      if (k === 'class') el.className = a[k];
+      else if (k.indexOf('on') === 0) el.addEventListener(k.slice(2), a[k]);
+      else el.setAttribute(k, a[k]);
+    });
+    for (var i = 2; i < arguments.length; i++) {
+      var c = arguments[i];
+      if (c == null || c === false) continue;
+      el.appendChild(c.nodeType ? c : document.createTextNode(String(c)));
+    }
+    return el;
+  }
+  function svuota(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+  function mostra(el) { svuota(main); main.appendChild(el); }
+
+  /* ---- comunicazione con il proxy ---- */
+  function chiama(req) {
+    req.idToken = idToken;
+    return fetch(CONFIG.PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(req)
+    }).then(function (r) { return r.json(); }).then(function (j) {
+      if (j && j.error === 'non_autorizzato') throw { codice: 'auth' };
+      return j;
+    });
+  }
+
+  function caricaStato() {
+    return chiama({ task: 'stato' }).then(function (j) {
+      if (!j || !j.ok) throw { codice: 'errore' };
+      stato = j;
+    });
+  }
+
+  /* ---- accesso con Google ---- */
+  var googlePronto = false;
+
+  function attendiGoogle() {
+    return new Promise(function (ok) {
+      var t0 = Date.now();
+      (function ciclo() {
+        if (window.google && window.google.accounts && window.google.accounts.id) return ok(true);
+        if (Date.now() - t0 > 10000) return ok(false);
+        setTimeout(ciclo, 100);
+      })();
+    });
+  }
+
+  function avviaGoogle() {
+    window.google.accounts.id.initialize({
+      client_id: CONFIG.CLIENT_ID,
+      callback: alleCredenziali,
+      auto_select: true,
+      cancel_on_tap_outside: false
+    });
+    googlePronto = true;
+  }
+
+  function alleCredenziali(risposta) {
+    idToken = risposta.credential;
+    tokenOra = Date.now();
+    scrivi('idt', idToken);
+    scrivi('idt_t', String(tokenOra));
+    main.textContent = 'Carico…';
+    caricaStato().then(function () {
+      $('btnEsci').classList.remove('hidden');
+      mostraHome();
+    }).catch(function (e) { gestisciErrore(e, true); });
+  }
+
+  function schermataLogin(messaggio) {
+    $('btnEsci').classList.add('hidden');
+    var box = h('div', { class: 'box center' },
+      h('h2', {}, 'Ciao! 👋'),
+      h('p', {}, 'Entra con il tuo account Google per studiare.'),
+      messaggio ? h('p', { class: 'err' }, messaggio) : null,
+      h('div', { id: 'gbtn', class: 'row', style: 'justify-content:center' }));
+    mostra(box);
+    if (googlePronto) {
+      window.google.accounts.id.renderButton($('gbtn'),
+        { theme: 'filled_blue', size: 'large', text: 'signin_with', locale: 'it' });
+    } else {
+      $('gbtn').appendChild(h('p', { class: 'err' }, 'Non riesco a caricare l\'accesso Google. Controlla internet e ricarica la pagina.'));
+    }
+  }
+
+  function gestisciErrore(e, appenaEntrato) {
+    if (e && e.codice === 'auth') {
+      var scaduto = !appenaEntrato && (Date.now() - tokenOra > 50 * 60000);
+      idToken = null; scrivi('idt', null); scrivi('idt_t', null);
+      schermataLogin(scaduto ? 'La sessione è scaduta: accedi di nuovo.'
+        : 'Questo account non è autorizzato a usare l\'app.');
+      return;
+    }
+    mostra(h('div', { class: 'box center' },
+      h('p', { class: 'err' }, 'Non riesco a collegarmi. Controlla internet e riprova.'),
+      h('button', { onclick: function () { main.textContent = 'Carico…'; avvio(); } }, 'Riprova')));
+  }
+
+  /* ---- home: nuovo argomento ---- */
+  function mostraHome() {
+    if (stato && stato.aperto) { mostraRiassunto(); return; }
+
+    var chips = h('div', { class: 'chips' });
+    Object.keys(COLORI).forEach(function (m) {
+      var b = h('button', { class: 'chip' + (bozza.materia === m ? ' on' : ''), style: '--c:' + COLORI[m],
+        onclick: function () {
+          bozza.materia = m;
+          Array.prototype.forEach.call(chips.children, function (c) { c.classList.toggle('on', c.textContent === m); });
+        } }, m);
+      chips.appendChild(b);
+    });
+
+    var txt = h('textarea', { id: 'txt', placeholder: 'Scrivi qui, oppure premi il microfono e detta…' });
+    txt.value = bozza.testo;
+    txt.addEventListener('input', function () { bozza.testo = txt.value; });
+
+    var micMsg = h('div', { class: 'small', id: 'micmsg' });
+    var btnMic = h('button', { class: 'sec', id: 'mic', onclick: function () { dettatura(btnMic, txt, micMsg); } }, '🎤 Detta');
+    var inFoto = h('input', { type: 'file', accept: 'image/*', capture: 'environment', class: 'hidden',
+      onchange: function () { aggiungiFile(inFoto, lista, msg); } });
+    var inFile = h('input', { type: 'file', accept: 'image/*,application/pdf', multiple: 'multiple', class: 'hidden',
+      onchange: function () { aggiungiFile(inFile, lista, msg); } });
+    var lista = h('div', { class: 'row', id: 'lista' });
+    var msg = h('p', { class: 'err hidden', id: 'msg' });
+    var crea = h('button', { class: 'big', id: 'crea', onclick: function () { creaRiassunto(crea, msg); } }, 'Crea il riassunto');
+
+    var box = h('div', { class: 'box' },
+      h('span', { class: 'step' }, '1. Che materia è?'), chips,
+      h('span', { class: 'step' }, '2. Cosa hai studiato?'), txt,
+      h('div', { class: 'row' },
+        btnMic,
+        h('button', { class: 'sec', onclick: function () { inFoto.click(); } }, '📷 Foto'),
+        h('button', { class: 'sec', onclick: function () { inFile.click(); } }, '📎 File')),
+      inFoto, inFile, micMsg, lista, msg, crea);
+    mostra(box);
+    disegnaAllegati(lista);
+  }
+
+  function mostraMsg(msg, testo) {
+    msg.textContent = testo;
+    msg.classList.toggle('hidden', !testo);
+  }
+
+  /* ---- foto e file ---- */
+  function leggiFile(file) {
+    return new Promise(function (ok, ko) {
+      if (file.type === 'application/pdf') {
+        if (file.size > 5 * 1024 * 1024) { ko('Il PDF è troppo grande (massimo 5 MB).'); return; }
+        var fr = new FileReader();
+        fr.onload = function () { ok({ mime: 'application/pdf', data: String(fr.result).split(',')[1], nome: file.name }); };
+        fr.onerror = function () { ko('Non riesco a leggere il file.'); };
+        fr.readAsDataURL(file);
+      } else if (file.type.indexOf('image/') === 0) {
+        var img = new Image();
+        var url = URL.createObjectURL(file);
+        img.onload = function () {
+          var max = 1800, w = img.width, hh = img.height;
+          var s = Math.min(1, max / Math.max(w, hh));
+          w = Math.round(w * s); hh = Math.round(hh * s);
+          var c = document.createElement('canvas');
+          c.width = w; c.height = hh;
+          c.getContext('2d').drawImage(img, 0, 0, w, hh);
+          URL.revokeObjectURL(url);
+          ok({ mime: 'image/jpeg', data: c.toDataURL('image/jpeg', 0.82).split(',')[1], nome: file.name || 'foto' });
+        };
+        img.onerror = function () { ko('Non riesco a leggere l\'immagine.'); };
+        img.src = url;
+      } else {
+        ko('Formato non supportato: usa foto o PDF.');
+      }
+    });
+  }
+
+  function aggiungiFile(input, lista, msg) {
+    var files = Array.prototype.slice.call(input.files || []);
+    input.value = '';
+    mostraMsg(msg, '');
+    files.reduce(function (p, f) {
+      return p.then(function () {
+        if (bozza.allegati.length >= MAX_ALLEGATI) throw 'Puoi caricare al massimo ' + MAX_ALLEGATI + ' file.';
+        return leggiFile(f).then(function (a) { bozza.allegati.push(a); });
+      });
+    }, Promise.resolve()).catch(function (e) {
+      mostraMsg(msg, typeof e === 'string' ? e : 'Non riesco a leggere il file.');
+    }).then(function () { disegnaAllegati(lista); });
+  }
+
+  function disegnaAllegati(lista) {
+    svuota(lista);
+    bozza.allegati.forEach(function (a, i) {
+      lista.appendChild(h('span', { class: 'att' }, (a.mime === 'application/pdf' ? '📄 ' : '🖼️ ') + a.nome,
+        h('button', { 'aria-label': 'Togli', onclick: function () { bozza.allegati.splice(i, 1); disegnaAllegati(lista); } }, '✕')));
+    });
+  }
+
+  /* ---- dettatura (Chrome su Android e Windows) ---- */
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var rec = null, inAscolto = false;
+
+  function dettatura(btn, txt, micMsg) {
+    if (!SR) { micMsg.textContent = 'Dettatura non supportata da questo browser: usa Chrome.'; return; }
+    if (inAscolto) { rec.stop(); return; }
+    rec = new SR();
+    rec.lang = 'it-IT'; rec.continuous = true; rec.interimResults = false;
+    rec.onresult = function (e) {
+      for (var i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          txt.value += (txt.value && ' ') + e.results[i][0].transcript;
+          bozza.testo = txt.value;
+        }
+      }
+    };
+    rec.onstart = function () { inAscolto = true; btn.textContent = '⏹ Stop'; micMsg.textContent = 'Sto ascoltando…'; };
+    rec.onend = function () { inAscolto = false; btn.textContent = '🎤 Detta'; micMsg.textContent = ''; };
+    rec.onerror = function () { micMsg.textContent = 'Microfono non disponibile o permesso negato.'; };
+    rec.start();
+  }
+
+  /* ---- richiesta del riassunto ---- */
+  function creaRiassunto(btn, msg) {
+    mostraMsg(msg, '');
+    if (!bozza.materia) { mostraMsg(msg, 'Scegli prima la materia.'); return; }
+    var testo = bozza.testo.trim();
+    if (!testo && !bozza.allegati.length) { mostraMsg(msg, 'Scrivi, detta o carica qualcosa da studiare.'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Sto preparando il riassunto… può servire un po\' di pazienza.';
+    chiama({
+      task: 'riassunto', materia: bozza.materia, testo: testo,
+      immagini: bozza.allegati.map(function (a) { return { mime: a.mime, data: a.data }; })
+    }).then(function (j) {
+      if (j.ok) { stato.aperto = j.argomento; bozza = nuovaBozza(); mostraRiassunto(); return; }
+      btn.disabled = false; btn.textContent = 'Crea il riassunto';
+      if (j.blocked || j.error === 'limite_giornaliero') { mostraMsg(msg, j.messaggio); return; }
+      if (j.error === 'argomento_aperto') { return caricaStato().then(mostraHome); }
+      mostraMsg(msg, 'Qualcosa non ha funzionato. Riprova tra poco.');
+    }).catch(function (e) {
+      if (e && e.codice === 'auth') { gestisciErrore(e, false); return; }
+      btn.disabled = false; btn.textContent = 'Crea il riassunto';
+      mostraMsg(msg, 'Non riesco a collegarmi. Controlla internet e riprova.');
+    });
+  }
+
+  /* ---- schermata del riassunto ---- */
+  function mostraRiassunto() {
+    var a = stato.aperto;
+    var box = h('div', { class: 'box' },
+      h('span', { class: 'badge', style: 'background:' + (COLORI[a.materia] || '#D9822B') },
+        a.materia + ' · Mappa ' + pad(a.numero)),
+      h('h2', {}, a.titolo));
+    a.riassunto.split(/\n+/).filter(function (p) { return p.trim(); }).forEach(function (p) {
+      box.appendChild(h('p', { class: 'riass' }, p));
+    });
+    box.appendChild(h('p', { class: 'small' },
+      'Leggilo con calma. Il timer di studio e le card arrivano nel prossimo aggiornamento.'));
+    mostra(box);
+  }
+
+  /* ---- area adulto ---- */
+  function testoErrorePin(j) {
+    if (j.error === 'pin_errato') return 'PIN errato. Tentativi rimasti: ' + j.rimasti + '.';
+    if (j.error === 'bloccato') return 'Troppi tentativi. Riprova tra ' + j.minuti + ' minuti.';
+    if (j.error === 'pin_non_impostato') return 'Il PIN non è ancora impostato nel proxy.';
+    if (j.error === 'valore_non_valido') return 'Valore non valido.';
+    return 'Operazione non riuscita.';
+  }
+
+  function apriAdulto() {
+    if (!idToken) return;
+    pinCorrente = null;
+    $('modal').classList.remove('hidden');
+    schermataPin();
+  }
+  function chiudiAdulto() {
+    pinCorrente = null;
+    $('modal').classList.add('hidden');
+    svuota($('mbody'));
+  }
+
+  function schermataPin() {
+    var corpo = $('mbody');
+    svuota(corpo);
+    var pin = h('input', { type: 'password', inputmode: 'numeric', maxlength: '8', 'aria-label': 'PIN' });
+    var msg = h('p', { class: 'err hidden' });
+    var ok = h('button', { onclick: function () {
+      ok.disabled = true;
+      chiama({ task: 'adulto_verifica', pin: pin.value }).then(function (j) {
+        ok.disabled = false;
+        if (j.ok) { pinCorrente = pin.value; schermataPannello(); return; }
+        mostraMsg(msg, testoErrorePin(j));
+      }).catch(function (e) {
+        ok.disabled = false;
+        if (e && e.codice === 'auth') { chiudiAdulto(); gestisciErrore(e, false); return; }
+        mostraMsg(msg, 'Non riesco a collegarmi.');
+      });
+    } }, 'Entra');
+    pin.addEventListener('keydown', function (e) { if (e.key === 'Enter') ok.click(); });
+    corpo.appendChild(h('p', {}, 'Inserisci il PIN.'));
+    corpo.appendChild(h('div', { class: 'row' }, pin, ok));
+    corpo.appendChild(msg);
+    setTimeout(function () { pin.focus(); }, 50);
+  }
+
+  function schermataPannello() {
+    var corpo = $('mbody');
+    svuota(corpo);
+    var msg = h('p', { class: 'small' });
+    var minuti = h('input', { type: 'number', min: '1', max: '120', value: String(stato.timerMin) });
+    var salva = h('button', { onclick: function () {
+      chiama({ task: 'timer_imposta', pin: pinCorrente, minuti: Number(minuti.value) }).then(function (j) {
+        if (j.ok) { stato.timerMin = j.timerMin; msg.className = 'ok'; msg.textContent = 'Timer salvato: ' + j.timerMin + ' minuti.'; return; }
+        msg.className = 'err'; msg.textContent = testoErrorePin(j);
+      }).catch(function () { msg.className = 'err'; msg.textContent = 'Non riesco a collegarmi.'; });
+    } }, 'Salva');
+    corpo.appendChild(h('b', {}, 'Pausa di studio (minuti)'));
+    corpo.appendChild(h('div', { class: 'row' }, minuti, salva));
+
+    if (stato.aperto) {
+      corpo.appendChild(h('hr', {}));
+      corpo.appendChild(h('p', {}, 'Argomento in corso: ' + stato.aperto.materia + ' ' + pad(stato.aperto.numero) + ' – ' + stato.aperto.titolo));
+      corpo.appendChild(h('button', { class: 'no', onclick: function () {
+        if (!window.confirm('Annullare questo argomento? Il ragazzo potrà iniziarne un altro.')) return;
+        chiama({ task: 'annulla_argomento', pin: pinCorrente }).then(function (j) {
+          if (j.ok) { stato.aperto = null; chiudiAdulto(); mostraHome(); return; }
+          msg.className = 'err'; msg.textContent = testoErrorePin(j);
+        }).catch(function () { msg.className = 'err'; msg.textContent = 'Non riesco a collegarmi.'; });
+      } }, 'Annulla argomento in corso'));
+    }
+    corpo.appendChild(msg);
+  }
+
+  /* ---- uscita ---- */
+  function esci() {
+    idToken = null; scrivi('idt', null); scrivi('idt_t', null);
+    stato = null;
+    if (googlePronto) window.google.accounts.id.disableAutoSelect();
+    schermataLogin();
+  }
+
+  /* ---- avvio ---- */
+  function avvio() {
+    attendiGoogle().then(function (ok) {
+      if (ok && !googlePronto) avviaGoogle();
+      if (idToken) {
+        return caricaStato().then(function () {
+          $('btnEsci').classList.remove('hidden');
+          mostraHome();
+        }).catch(function (e) {
+          if (e && e.codice === 'auth') { idToken = null; scrivi('idt', null); schermataLogin(); }
+          else gestisciErrore(e, false);
+        });
+      }
+      schermataLogin();
+    });
+  }
+
+  $('btnAdulto').addEventListener('click', apriAdulto);
+  $('mclose').addEventListener('click', chiudiAdulto);
+  $('btnEsci').addEventListener('click', esci);
+
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  }
+  avvio();
+})();
+</script>
+</body>
+</html>
