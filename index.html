@@ -85,6 +85,39 @@
   #mbody { padding: 14px; }
   #mbody .card { margin: 10px 0 0; padding: 12px; }
 
+
+  /* mappa concettuale A4 (stile dei fogli di Eli) */
+  @page mappa { size: A4; margin: 0; }
+  .mp-wrap { overflow: hidden; margin: 10px auto; }
+  .mp-page { --m: #2E8B57; --ml: color-mix(in srgb, var(--m) 14%, #fff); width: 794px; height: 1123px; background: #FBF6EA; color: #173D2A; padding: 38px 42px; overflow: hidden; display: flex; flex-direction: column; transform-origin: top left; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; }
+  .mp-page [contenteditable]:focus { outline: 2px dashed #CD9A0D; outline-offset: 1px; }
+  .mp-banner { background: var(--m); color: #fff; text-align: center; border-radius: 10px; padding: 10px 12px; font-size: 22px; font-weight: 800; letter-spacing: 1px; }
+  .mp-badges { text-align: center; margin: 8px 0 4px; }
+  .mp-badge { display: inline-block; background: #CD9A0D; color: #fff; font-weight: 800; border-radius: 999px; padding: 3px 16px; font-size: 13px; margin: 0 4px; }
+  .mp-badge.d { background: #E8B93A; color: #3a2d00; }
+  .mp-page h1 { text-align: center; font-size: 31px; color: var(--m); margin: 6px 0 4px; border-bottom: 3px solid var(--m); padding-bottom: 8px; }
+  .mp-g2, .mp-g4 { display: grid; gap: 10px; margin-top: 14px; }
+  .mp-g2 { grid-template-columns: 1fr 1fr; } .mp-g4 { grid-template-columns: repeat(4, 1fr); }
+  .mp-box { background: #fff; border: 2px solid #CD9A0D; border-radius: 10px; overflow: hidden; }
+  .mp-box h3 { margin: 0; background: #E8B93A; color: #3a2d00; font-size: 13.5px; padding: 6px 10px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: .5px; }
+  .mp-box h3 svg { width: 20px; height: 20px; flex: none; }
+  .mp-box .b { padding: 9px 11px; font-size: 14.5px; line-height: 1.45; }
+  .mp-box.red { border-color: #D9553F; } .mp-box.red h3 { background: #D9553F; color: #fff; }
+  .mp-box.green { border-color: var(--m); } .mp-box.green h3 { background: var(--m); color: #fff; }
+  .mp-box ul { margin: 0; padding-left: 16px; } .mp-box li { margin-bottom: 2px; }
+  .mp-flow { display: grid; grid-template-columns: 1fr 26px 1fr 26px 1fr; align-items: stretch; margin-top: 14px; }
+  .mp-arrow { display: flex; align-items: center; justify-content: center; font-size: 26px; color: #CD9A0D; font-weight: 800; }
+  .mp-ex { background: var(--ml); border-radius: 6px; padding: 4px 8px; margin: 4px 0; font-weight: 700; }
+  .mp-chain { background: var(--ml); border: 2px solid var(--m); border-radius: 10px; text-align: center; padding: 11px; font-size: 17px; font-weight: 800; margin-top: 14px; }
+  .mp-key { display: inline-block; border: 2px solid #CD9A0D; background: #FFF3D0; border-radius: 8px; padding: 8px 16px; font-size: 20px; font-weight: 800; }
+  .mp-foot { margin-top: auto; text-align: center; font-size: 11px; color: #6b7d7c; border-top: 1px solid #CD9A0D; padding-top: 6px; }
+  .hub { display: grid; gap: 12px; }
+  .th { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 10px 0; }
+  .th > div { aspect-ratio: 16 / 9; border-radius: 8px; border: 2px solid #3d2a14; background: #fff; overflow: hidden; display: flex; flex-direction: column; font-size: 11px; }
+  .th b { background: var(--cd); color: #fff; padding: 5px 8px; font-size: 11px; }
+  .th span { padding: 5px 8px; line-height: 1.35; }
+  #stampa.pm { page: mappa; }
+  @media print { #stampa .mp-page { transform: none !important; } }
   #stampa { display: none; }
   @media print {
     @page { size: A4; margin: 12mm; }
@@ -110,6 +143,8 @@
 <div id="stampa"></div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="pptxgen.bundle.js"></script>
+<script src="slide.js"></script>
 <script>
 (function () {
   'use strict';
@@ -296,7 +331,8 @@
       var c = h('div', { class: 'card' },
         h('span', { class: 'badge', style: 'background:' + colore(a.materia) }, a.materia + ' · Mappa ' + pad(a.numero)),
         h('h1', {}, a.titolo),
-        h('p', {}, a.stato === 'pausa' ? 'Sei in pausa di studio.' : 'Hai un argomento in corso.'),
+        h('p', {}, { pausa: 'Sei in pausa di studio.', card: 'Le card di ripasso ti aspettano.',
+          sbloccato: 'Hai finito tutte le card!' }[a.stato] || 'Hai un argomento in corso.'),
         h('button', { class: 'btn', onclick: continuaArgomento }, 'Continua'));
       mostra(h('div', {}, h('p', {}, 'Ciao! Finisci questo argomento prima di iniziarne un altro.'), c, pieDiPagina), opz);
       return;
@@ -337,7 +373,11 @@
   }
 
   function continuaArgomento() {
-    if (stato.aperto.stato === 'pausa') mostraPausa(); else mostraRiassunto();
+    var st = stato.aperto.stato;
+    if (st === 'pausa') mostraPausa();
+    else if (st === 'card') mostraCard();
+    else if (st === 'sbloccato') mostraSbloccato();
+    else mostraRiassunto();
   }
 
   function mostraMsg(msg, testo) {
@@ -582,7 +622,8 @@
     var tempo = h('b', {}, '--:--');
     var etich = h('div', { class: 'small' }, 'minuti rimasti');
     var avviso = h('p', {}, 'Chiudi il libro e fai qualcos\'altro. Quando il tempo finisce arrivano le card di ripasso.');
-    var vai = h('button', { class: 'btn', disabled: 'disabled' }, 'Le card si aprono alla fine');
+    var vai = h('button', { class: 'btn', disabled: 'disabled', onclick: function () { avviaCard(vai, avviso); } },
+      'Le card si aprono alla fine');
     var corpo = h('div', { class: 'center' },
       h('h1', {}, 'Pausa di studio'), h('div', { class: 'dial' }, tempo, etich), avviso, vai);
     mostra(corpo, { titolo: a.materia + ' · Mappa ' + pad(a.numero), mat: a.materia, indietro: mostraHome });
@@ -592,12 +633,256 @@
         tempo.textContent = ('0' + Math.floor(resto / 60)).slice(-2) + ':' + ('0' + (resto % 60)).slice(-2);
       } else {
         tempo.textContent = '00:00'; etich.textContent = 'tempo finito';
-        avviso.textContent = 'Pausa finita! Le card di ripasso arrivano nel prossimo aggiornamento dell\'app.';
+        avviso.textContent = 'Pausa finita! Sei pronto per le card di ripasso.';
+        vai.disabled = false; vai.textContent = 'Inizia le card';
         clearInterval(timerId); timerId = null;
       }
     }
     giro();
     timerId = setInterval(giro, 1000);
+  }
+
+  /* ---- card di ripasso ---- */
+  function avviaCard(btn, msg) {
+    btn.disabled = true; btn.textContent = 'Preparo le card…';
+    msg.textContent = 'Le sto scrivendo dal tuo riassunto: ci vuole un po\'.';
+    msg.className = '';
+    chiama({ task: 'card_genera' }).then(function (j) {
+      if (j.ok) { stato.aperto = j.argomento; mostraCard(); return; }
+      if (j.error === 'pausa_non_finita') { stato.aperto.pausaFine = j.pausaFine; stato.aperto.adesso = j.adesso; mostraPausa(); return; }
+      btn.disabled = false; btn.textContent = 'Inizia le card';
+      msg.className = 'err'; msg.textContent = j.messaggio || 'Non sono riuscito a preparare le card. Riprova.';
+    }).catch(function (e) {
+      if (e && e.codice === 'auth') { gestisciErrore(e, false); return; }
+      btn.disabled = false; btn.textContent = 'Inizia le card';
+      msg.className = 'err'; msg.textContent = 'Non riesco a collegarmi. Riprova.';
+    });
+  }
+
+  var ESITI = {
+    giusta: { t: 'Giusta!', bg: '#DCEFE3', bo: '#2c6347' },
+    quasi: { t: 'Quasi!', bg: '#FFF1C9', bo: '#CD9A0D' },
+    sbagliata: { t: 'Non ci siamo', bg: '#FDE3DD', bo: '#A8321F' }
+  };
+
+  function mostraCard() {
+    var a = stato.aperto, c = a.card;
+    if (!c || !c.corrente) { mostraSbloccato(); return; }
+    var txt = h('textarea', { placeholder: 'Scrivi qui la tua risposta…', 'aria-label': 'La tua risposta' });
+    var msg = h('p', { class: 'err hidden' });
+    var indizio = h('div', { class: 'dint hidden' });
+    var zonaEsito = h('div', {});
+    var btnInd = h('button', { class: 'btn sec', onclick: function () {
+      btnInd.disabled = true;
+      chiama({ task: 'card_indizio' }).then(function (j) {
+        if (j.ok) { indizio.textContent = ''; indizio.appendChild(h('b', {}, 'Suggerimento: ')); indizio.appendChild(document.createTextNode(j.indizio)); indizio.classList.remove('hidden'); }
+        else btnInd.disabled = false;
+      }).catch(function (e) { btnInd.disabled = false; if (e && e.codice === 'auth') gestisciErrore(e, false); });
+    } }, 'Suggerimento');
+    var ctrl = h('button', { class: 'btn', onclick: function () {
+      if (!txt.value.trim()) { mostraMsg(msg, 'Scrivi prima la tua risposta.'); return; }
+      mostraMsg(msg, ''); ctrl.disabled = true; btnInd.disabled = true; ctrl.textContent = 'Controllo…';
+      chiama({ task: 'card_rispondi', risposta: txt.value }).then(function (j) {
+        if (!j.ok) {
+          ctrl.disabled = false; btnInd.disabled = false; ctrl.textContent = 'Controlla';
+          if (j.error === 'stato_non_valido') { caricaStato().then(mostraHome); return; }
+          mostraMsg(msg, j.messaggio || 'Qualcosa non ha funzionato. Riprova.'); return;
+        }
+        txt.disabled = true; ctrl.classList.add('hidden'); btnInd.classList.add('hidden');
+        var e = ESITI[j.esito] || ESITI.sbagliata;
+        var pannello = h('div', { class: 'datt', style: 'background:' + e.bg + ';border-color:' + e.bo },
+          h('b', { style: 'color:#3d2a14;font-size:17px' }, e.t), j.commento);
+        zonaEsito.appendChild(pannello);
+        if (j.rispostaCorretta) zonaEsito.appendChild(h('div', { class: 'dst' }, h('b', {}, 'Risposta giusta: '), j.rispostaCorretta));
+        if (j.esito !== 'giusta') zonaEsito.appendChild(h('p', { class: 'small' }, 'Questa card tornerà più avanti.'));
+        c.giuste = j.giuste; c.tot = j.tot; c.corrente = j.prossima;
+        if (j.finito) a.stato = 'sbloccato';
+        zonaEsito.appendChild(h('button', { class: 'btn', onclick: function () {
+          if (j.finito) mostraSbloccato(); else mostraCard();
+        } }, j.finito ? 'Fine!' : 'Prossima card'));
+      }).catch(function (e) {
+        ctrl.disabled = false; btnInd.disabled = false; ctrl.textContent = 'Controlla';
+        if (e && e.codice === 'auth') { gestisciErrore(e, false); return; }
+        mostraMsg(msg, 'Non riesco a collegarmi. Riprova.');
+      });
+    } }, 'Controlla');
+    var dg = h('span', { class: 'small', style: 'color:#fff;font-weight:800' }, 'Giuste: ' + c.giuste);
+    var corpo = h('div', {},
+      h('div', { class: 'prog' }, h('div', { style: 'width:' + Math.round(100 * c.giuste / c.tot) + '%' })),
+      h('div', { class: 'card', style: 'box-shadow:0 4px 0 #3d2a14' },
+        h('span', { class: 'lbl', style: 'margin:0;color:#1d5c3d' }, 'DOMANDA'),
+        h('div', { style: 'font-size:19px;line-height:1.35;font-weight:800;margin-top:6px' }, c.corrente.domanda)),
+      h('span', { class: 'lbl' }, 'LA TUA RISPOSTA'), txt, indizio, msg, btnInd, ctrl, zonaEsito);
+    mostra(corpo, { titolo: 'Card ' + (c.giuste + 1) + ' di ' + c.tot, mat: a.materia, indietro: mostraHome, destra: dg });
+  }
+
+  var ICONE_MAPPA = [
+    '<svg viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z" fill="#fff" stroke="#3a2d00" stroke-width="2" stroke-linejoin="round"/></svg>',
+    '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="#fff" stroke="#3a2d00" stroke-width="2"/><path d="M4 21c0-5 4-7 8-7s8 2 8 7z" fill="#fff" stroke="#3a2d00" stroke-width="2"/></svg>',
+    '<svg viewBox="0 0 24 24"><path d="M3 18l2-10 5 5 2-8 2 8 5-5 2 10z" fill="#fff" stroke="#3a2d00" stroke-width="2" stroke-linejoin="round"/></svg>',
+    '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#E1F2E8" stroke="#2E8B57" stroke-width="2"/><path d="M8 13l3 3 5-7" fill="none" stroke="#2E8B57" stroke-width="2.5" stroke-linecap="round"/></svg>'
+  ];
+  var IC = {
+    lente: '<svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6" fill="#d4ecde" stroke="#2E8B57" stroke-width="2"/><line x1="15" y1="15" x2="21" y2="21" stroke="#2E8B57" stroke-width="3" stroke-linecap="round"/></svg>',
+    lampada: '<svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0-3.5 10.9V17h7v-3.1A6 6 0 0 0 12 3z" fill="#FFE27A" stroke="#CD9A0D" stroke-width="1.5"/><rect x="9" y="18" width="6" height="3" rx="1" fill="#CD9A0D"/></svg>',
+    trappola: '<svg viewBox="0 0 24 24"><path d="M12 3l10 18H2z" fill="#fff"/><rect x="11" y="9" width="2" height="6" fill="#D9553F"/><rect x="11" y="16.5" width="2" height="2" fill="#D9553F"/></svg>',
+    prof: '<svg viewBox="0 0 24 24"><path d="M4 4h16v12H9l-5 4z" fill="#fff" stroke="#3a2d00" stroke-width="1.8" stroke-linejoin="round"/><text x="12" y="13" font-size="9" font-weight="800" text-anchor="middle" fill="#3a2d00">?</text></svg>',
+    chiave: '<svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="5" fill="none" stroke="#3a2d00" stroke-width="2.5"/><path d="M13 12h9M19 12v4M16 12v3" stroke="#3a2d00" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    orologio: '<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="#fff" stroke="#3a2d00" stroke-width="2"/><path d="M12 8v5l3 2" fill="none" stroke="#3a2d00" stroke-width="2" stroke-linecap="round"/><rect x="10" y="2" width="4" height="3" fill="#3a2d00"/></svg>'
+  };
+
+  // testo modificabile con limite di lunghezza (la cornice non si sposta)
+  function ed(tag, testo, max, attrs) {
+    var el = h(tag, attrs || {}, testo);
+    el.setAttribute('contenteditable', 'plaintext-only');
+    el.setAttribute('spellcheck', 'false');
+    var tetto = Math.round(max * 1.3);
+    el.addEventListener('beforeinput', function (e) {
+      if (e.inputType === 'insertParagraph' || e.inputType === 'insertLineBreak') { e.preventDefault(); return; }
+      if (e.inputType && e.inputType.indexOf('insert') === 0 && el.textContent.length >= tetto) e.preventDefault();
+    });
+    return el;
+  }
+  function riquadro(titolo, icona, corpo, cls) {
+    var t = h('h3', {}, h('span', { style: 'display:contents' }), titolo);
+    t.firstChild.innerHTML = icona; // icone fisse del programma
+    var r = h('div', { class: 'mp-box ' + (cls || '') }, t, h('div', { class: 'b' }, corpo));
+    return r;
+  }
+  function elenco(voci, max) {
+    var u = h('ul', {});
+    voci.forEach(function (v) { u.appendChild(ed('li', v, max)); });
+    return u;
+  }
+
+  function mappaDom(m, materia, numero) {
+    var p = h('div', { class: 'mp-page', style: '--m:color-mix(in srgb, ' + colore(materia) + ' 82%, #000)' });
+    var M = materia.toUpperCase();
+    p.appendChild(h('div', { class: 'mp-banner' }, 'LA MAPPA DI ' + M));
+    p.appendChild(h('div', { class: 'mp-badges' }, h('span', { class: 'mp-badge' }, 'MAPPA ' + pad(numero)),
+      ed('span', M + ' · ' + m.tema.toUpperCase(), 50, { class: 'mp-badge d' })));
+    p.appendChild(ed('h1', m.titolo, 60));
+    p.appendChild(h('div', { class: 'mp-g2' },
+      riquadro('Concetto chiave', IC.lente, ed('div', m.concetto_chiave, 230)),
+      riquadro('Idea centrale', IC.lampada, ed('div', m.idea_centrale, 230))));
+    var g4 = h('div', { class: 'mp-g4' });
+    m.elementi.forEach(function (e, i) {
+      g4.appendChild(riquadro(e.titolo, ICONE_MAPPA[i % 4], ed('div', e.testo, 100)));
+    });
+    p.appendChild(g4);
+    var ex = h('div', {});
+    m.effetto.forEach(function (x) { ex.appendChild(ed('div', x, 40, { class: 'mp-ex' })); });
+    p.appendChild(h('div', { class: 'mp-flow' },
+      riquadro('Causa', '', elenco(m.causa, 70), 'green'), h('div', { class: 'mp-arrow' }, '➜'),
+      riquadro('Effetto', '', ex, 'green'), h('div', { class: 'mp-arrow' }, '➜'),
+      riquadro('Conseguenza', '', elenco(m.conseguenza, 70), 'green')));
+    p.appendChild(ed('div', m.formula, 90, { class: 'mp-chain' }));
+    p.appendChild(h('div', { class: 'mp-g2' },
+      riquadro('Occhio alla trappola', IC.trappola, ed('div', m.trappola, 220), 'red'),
+      riquadro('Come te lo chiede la prof', IC.prof, h('div', {}, ed('span', '«' + m.domanda + '»', 130), h('br'),
+        ed('i', m.suggerimento, 130)))));
+    p.appendChild(h('div', { class: 'mp-g2' },
+      riquadro('Parola chiave', IC.chiave, h('div', { style: 'text-align:center;padding:10px 6px' }, ed('span', m.parola_chiave, 24, { class: 'mp-key' }))),
+      riquadro('Ricorda al volo', IC.orologio, elenco(m.ricorda, 55))));
+    p.appendChild(h('div', { class: 'mp-foot' }, materia + ' · ' + m.tema + ' · Mappa ' + pad(numero)));
+    return p;
+  }
+
+  function mostraMappa() {
+    var a = stato.aperto, m = a.sblocco.mappa;
+    var pagina = mappaDom(m, a.materia, a.numero);
+    var larg = Math.min(main.clientWidth || 600, 794);
+    var sc = Math.min(1, (larg - 36) / 794);
+    pagina.style.transform = 'scale(' + sc + ')';
+    var wrap = h('div', { class: 'mp-wrap', style: 'width:' + Math.round(794 * sc) + 'px;height:' + Math.round(1123 * sc) + 'px' }, pagina);
+    var pdf = h('button', { class: 'btn', onclick: function () {
+      var s = $('stampa'); svuota(s); s.className = 'pm';
+      var copia = pagina.cloneNode(true);
+      copia.style.transform = 'none';
+      Array.prototype.forEach.call(copia.querySelectorAll('[contenteditable]'), function (x) { x.removeAttribute('contenteditable'); });
+      s.appendChild(copia);
+      var v = document.title; document.title = a.materia + ' ' + pad(a.numero) + ' - Mappa';
+      window.print(); document.title = v; s.className = '';
+    } }, 'Scarica il PDF (A4)');
+    mostra(h('div', {},
+      h('p', { class: 'small' }, 'Tocca un testo per modificarlo. Pizzica per ingrandire. La cornice resta ferma.'),
+      wrap, pdf),
+      { titolo: a.materia + ' · Mappa ' + pad(a.numero), mat: a.materia, indietro: mostraSbloccato, home: mostraHome });
+  }
+
+  /* ---- slide ---- */
+  function righeAnteprima(d) {
+    var r = [{ t: d.titolo, r: [d.sottotitolo] }, { t: 'Il quadro generale', r: [d.centro + ': ' + d.nodi.join(', ')] }];
+    d.colonne.forEach(function (c) { r.push({ t: c.titolo_slide, r: [c.a.titolo + ': ' + c.a.voci[0], c.b.titolo + ': ' + c.b.voci[0]] }); });
+    r.push({ t: d.numero.titolo, r: [d.numero.valore + ' ' + d.numero.etichetta, d.numero.testo] });
+    r.push({ t: 'Da ricordare', r: d.ricorda });
+    return r;
+  }
+
+  function mostraSlide() {
+    var a = stato.aperto, d = a.sblocco.slide;
+    var th = h('div', { class: 'th', style: '--cd:color-mix(in srgb, ' + colore(a.materia) + ' 82%, #000)' });
+    righeAnteprima(d).forEach(function (x, i) {
+      th.appendChild(h('div', {}, h('b', {}, (i + 1) + ' · ' + x.t), h('span', {}, x.r.join(' · '))));
+    });
+    var msg = h('p', { class: 'err hidden' });
+    var dl = h('button', { class: 'btn', onclick: function () {
+      mostraMsg(msg, '');
+      if (!window.PptxGenJS || !window.ripassoSlide) { mostraMsg(msg, 'Non riesco a creare il file. Ricarica la pagina.'); return; }
+      dl.disabled = true;
+      var P = window.ripassoSlide.costruisci(window.PptxGenJS, d, a.materia, a.numero, colore(a.materia));
+      P.write({ outputType: 'blob' }).then(function (blob) {
+        var url = URL.createObjectURL(blob);
+        var l = h('a', { href: url, download: a.materia + ' ' + pad(a.numero) + ' - slide.pptx' });
+        document.body.appendChild(l); l.click(); document.body.removeChild(l);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+        dl.disabled = false;
+      }).catch(function () { dl.disabled = false; mostraMsg(msg, 'Non sono riuscito a creare il file. Riprova.'); });
+    } }, 'Scarica le slide (.pptx)');
+    mostra(h('div', {},
+      h('h1', {}, 'Le tue slide'), th,
+      h('p', { class: 'small' }, 'Nel file puoi modificare ogni testo. I colori sono quelli di ' + a.materia + '.'),
+      dl, msg,
+      h('div', { class: 'card' }, h('b', {}, 'Come aprirle in Canva'),
+        h('p', {}, '1. Scarica il file .pptx. 2. Apri Canva e premi Crea un design, poi Importa file. 3. Scegli il file: ogni slide è modificabile.'))),
+      { titolo: a.materia + ' · Mappa ' + pad(a.numero), mat: a.materia, indietro: mostraSbloccato, home: mostraHome });
+  }
+
+  /* ---- sblocco: mappa e slide ---- */
+  function mostraSbloccato() {
+    var a = stato.aperto;
+    var opz = { titolo: a.materia + ' · Mappa ' + pad(a.numero), mat: a.materia, home: mostraHome };
+    if (!a.sblocco) {
+      var msg = h('p', { class: 'err hidden' });
+      var crea = h('button', { class: 'btn', onclick: function () {
+        crea.disabled = true; crea.textContent = 'Preparo mappa e slide…'; mostraMsg(msg, '');
+        chiama({ task: 'sblocco_genera' }).then(function (j) {
+          if (j.ok) { stato.aperto = j.argomento; mostraSbloccato(); return; }
+          crea.disabled = false; crea.textContent = 'Crea mappa e slide';
+          mostraMsg(msg, j.messaggio || 'Non sono riuscito a prepararle. Riprova.');
+        }).catch(function (e) {
+          if (e && e.codice === 'auth') { gestisciErrore(e, false); return; }
+          crea.disabled = false; crea.textContent = 'Crea mappa e slide';
+          mostraMsg(msg, 'Non riesco a collegarmi. Riprova.');
+        });
+      } }, 'Crea mappa e slide');
+      mostra(h('div', { class: 'center' }, h('h1', {}, 'Bravo!'),
+        h('div', { class: 'dst' }, 'Hai risposto bene a tutte le card: si sbloccano la mappa concettuale e le slide.'),
+        crea, msg), opz);
+      return;
+    }
+    var fine = h('button', { class: 'btn no', onclick: function () {
+      if (!window.confirm('Hai scaricato mappa e slide? Poi potrai iniziare un nuovo argomento.')) return;
+      chiama({ task: 'chiudi_argomento' }).then(function (j) {
+        if (j.ok) { stato.aperto = null; bozza = nuovaBozza(); mostraHome(); }
+      }).catch(function (e) { if (e && e.codice === 'auth') gestisciErrore(e, false); });
+    } }, 'Ho finito: nuovo argomento');
+    mostra(h('div', {}, h('h1', {}, 'Mappa e slide pronte'),
+      h('div', { class: 'card' }, h('b', {}, 'Mappa concettuale (A4)'), h('p', { class: 'small' }, 'Si può modificare e salvare in PDF.'),
+        h('button', { class: 'btn', onclick: mostraMappa }, 'Apri la mappa')),
+      h('div', { class: 'card' }, h('b', {}, 'Slide per l\'esposizione'), h('p', { class: 'small' }, 'File .pptx da aprire in Canva o PowerPoint.'),
+        h('button', { class: 'btn', onclick: mostraSlide }, 'Apri le slide')),
+      fine), opz);
   }
 
   /* ---- area adulto ---- */

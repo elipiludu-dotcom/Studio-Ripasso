@@ -1,6 +1,6 @@
 // Service worker minimo: rende l'app installabile e tiene una copia per quando la rete manca.
 // Prima prova la rete, così gli aggiornamenti arrivano subito.
-var VERSIONE = 'studio-ripasso-v2';
+var VERSIONE = 'studio-ripasso-v4';
 var FILE = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', function (e) {
