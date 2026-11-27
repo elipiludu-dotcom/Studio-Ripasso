@@ -3,73 +3,111 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#D9822B">
+<meta name="theme-color" content="#B05A0C">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Studio Ripasso</title>
 <style>
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body { margin: 0; background: #e9e4d6; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; color: #3d2a14; }
-  .app { max-width: 640px; margin: 0 auto; min-height: 100vh; background: #FBF6EA; padding: 14px; display: flex; flex-direction: column; }
-  .banner { background: #D9822B; color: #fff; text-align: center; border-radius: 10px; padding: 8px 12px; font-size: 20px; font-weight: 800; letter-spacing: 1px; margin-bottom: 12px; }
-  main { flex: 1; }
-  .box { background: #fff; border: 2px solid #CD9A0D; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
-  .box.center { text-align: center; padding: 24px 14px; }
-  h2 { margin: 6px 0 10px; color: #D9822B; font-size: 22px; }
+  .app { max-width: 640px; margin: 0 auto; min-height: 100vh; background: #FBF6EA; display: flex; flex-direction: column; }
+  #bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--b, #FBF6EA); color: var(--bt, #3d2a14); position: sticky; top: 0; z-index: 5; min-height: 64px; }
+  #bar.col { --bt: #fff; }
+  #bar .t { flex: 1; font-size: 15px; font-weight: 800; line-height: 1.2; }
+  #bar .logo { display: flex; align-items: center; gap: 10px; flex: 1; font-size: 21px; font-weight: 800; }
+  #bar .logo i { width: 40px; height: 40px; border-radius: 12px; background: #B05A0C; display: flex; align-items: center; justify-content: center; }
+  .ib { width: 44px; height: 44px; border-radius: 22px; border: 2px solid currentColor; background: transparent; color: inherit; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; }
+  .ib svg { width: 22px; height: 22px; }
+  main { flex: 1; padding: 6px 18px 18px; }
+  h1 { font-size: 24px; margin: 6px 0 8px; line-height: 1.15; }
   p { line-height: 1.5; margin: 8px 0; }
-  .riass { font-size: 17px; }
-  .small { font-size: 13px; color: #a8957a; }
-  .err { color: #C0392B; font-weight: 700; }
-  .ok { color: #3E7F5D; font-weight: 700; }
+  .lbl { font-size: 13px; font-weight: 800; letter-spacing: .5px; margin: 16px 0 8px; display: block; }
+  .small { font-size: 13px; color: #5a4a36; }
+  .err { color: #B3321F; font-weight: 700; }
+  .okc { color: #2c6347; font-weight: 700; }
   .hidden { display: none !important; }
-  .step { display: block; font-weight: 800; margin: 12px 0 6px; }
-  .step:first-child { margin-top: 0; }
+  .center { text-align: center; }
+  .card { background: #fff; border: 2px solid #3d2a14; border-radius: 16px; padding: 16px; margin: 12px 0; }
 
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip { border: 3px solid var(--c); background: #fff; color: #3d2a14; border-radius: 999px; padding: 8px 14px; font-size: 15px; font-weight: 800; cursor: pointer; font-family: inherit; }
-  .chip.on { background: var(--c); color: #fff; }
+  .mat { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .m { min-height: 52px; border-radius: 12px; border: 2px solid #3d2a14; border-top: 8px solid var(--c); background: #fff; color: #3d2a14; font-size: 13px; font-weight: 800; padding: 4px; cursor: pointer; font-family: inherit; }
+  .m.on { border-top-width: 2px; border-color: color-mix(in srgb, var(--c) 70%, #000); background: color-mix(in srgb, var(--c) 82%, #000); color: #fff; box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 55%, #000); }
 
-  textarea { width: 100%; min-height: 130px; border: 2px solid #E8D9A8; border-radius: 10px; padding: 10px; font-family: inherit; font-size: 16px; color: #3d2a14; resize: vertical; }
-  textarea:focus, input:focus { outline: none; border-color: #D9822B; }
-  input[type=password], input[type=number] { border: 2px solid #E8D9A8; border-radius: 8px; padding: 10px; font-family: inherit; font-size: 18px; width: 140px; }
+  textarea { width: 100%; min-height: 110px; border: 2px solid #3d2a14; border-radius: 14px; padding: 12px; font-family: inherit; font-size: 15px; color: #3d2a14; resize: vertical; background: #fff; }
+  textarea:focus, input:focus { outline: 3px solid #E8B93A; }
+  input[type=password], input[type=number] { border: 2px solid #3d2a14; border-radius: 12px; padding: 10px; font-family: inherit; font-size: 20px; width: 110px; text-align: center; min-height: 48px; }
 
-  button { font-family: inherit; font-weight: 800; border: 0; border-radius: 12px; padding: 13px 16px; font-size: 16px; cursor: pointer; color: #fff; background: #D9822B; }
-  button.sec { background: #eadfc7; color: #3d2a14; }
-  button.no { background: #DB5742; }
-  button.big { width: 100%; margin-top: 12px; }
-  button:disabled { background: #cfc7b3; color: #fff; cursor: not-allowed; }
-  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; align-items: center; }
-  .att { display: inline-flex; align-items: center; gap: 6px; background: #FFF3D0; border: 2px solid #E8B93A; border-radius: 999px; padding: 4px 6px 4px 12px; font-size: 14px; font-weight: 700; }
-  .att button { padding: 2px 9px; border-radius: 999px; font-size: 14px; background: #E8B93A; color: #3a2d00; }
-
+  button { font-family: inherit; }
+  .btn { min-height: 56px; border-radius: 28px; border: 0; background: #B05A0C; color: #fff; font-size: 17px; font-weight: 800; padding: 0 20px; box-shadow: 0 4px 0 #7a3e06; cursor: pointer; width: 100%; margin-top: 12px; }
+  .btn:disabled { background: #b8a98c; box-shadow: none; cursor: not-allowed; }
+  .btn.sec { background: #fff; color: #3d2a14; border: 2px solid #3d2a14; box-shadow: none; min-height: 50px; font-size: 15px; }
+  .btn.no { background: #FDE3DD; color: #8a2414; border: 2px solid #A8321F; box-shadow: none; min-height: 50px; font-size: 15px; }
+  .btn.g { background: #2c6347; box-shadow: 0 4px 0 #1d4a33; min-height: 48px; font-size: 15px; width: auto; margin: 0; }
+  .tri { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+  .tri button { min-height: 56px; border-radius: 14px; border: 2px solid #3E7F5D; background: #E3F1E8; color: #1d4a33; font-size: 14px; font-weight: 800; cursor: pointer; }
+  .att { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 6px 0 12px; border-radius: 18px; background: #FFF1C9; border: 1px solid #CD9A0D; font-size: 13px; margin: 8px 6px 0 0; }
+  .att button { border: 0; background: #E8B93A; border-radius: 14px; min-height: 28px; font-weight: 800; cursor: pointer; }
+  .link { background: none; border: 0; color: #5a4a36; font-size: 14px; padding: 12px; text-decoration: underline; font-weight: 700; cursor: pointer; }
   .badge { display: inline-block; color: #fff; font-weight: 800; border-radius: 999px; padding: 4px 14px; font-size: 13px; }
 
-  footer { text-align: center; padding: 10px 0 4px; }
-  .link { background: none; color: #a8957a; font-size: 13px; padding: 6px 10px; text-decoration: underline; font-weight: 700; }
+  .prog { height: 12px; border-radius: 6px; background: #e6dcc3; margin: 16px 0 8px; overflow: hidden; }
+  .prog div { height: 100%; background: #E8B93A; transition: width .4s; }
+  .dial { width: 230px; height: 230px; border-radius: 50%; border: 14px solid #E8B93A; background: #fff; margin: 22px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .dial b { font-size: 54px; }
+
+  /* riassunto (schermo e stampa) */
+  .doc { --cd: #2E8B57; }
+  .dint { background: #FFF1C9; border-radius: 14px; padding: 12px 14px; font-size: 14.5px; line-height: 1.45; margin: 12px 0; }
+  .dsez { background: var(--cd); color: #fff; border-radius: 12px; padding: 10px 14px; font-size: 17px; font-weight: 800; margin: 20px 0 10px; break-after: avoid; }
+  .dp { font-size: 15.5px; line-height: 1.55; margin: 9px 0; break-inside: avoid; }
+  .del { margin: 9px 0; font-size: 15.5px; line-height: 1.5; break-inside: avoid; }
+  .del b.tt { display: block; margin-bottom: 4px; }
+  .del div.v { display: flex; gap: 10px; margin: 3px 0; }
+  .del i { width: 8px; height: 8px; border-radius: 4px; background: var(--cd); margin-top: 8px; flex: none; }
+  .dtab { border: 2px solid #3d2a14; border-radius: 12px; overflow: hidden; background: #fff; margin: 12px 0; font-size: 14px; break-inside: avoid; }
+  .dtab .r { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); border-top: 1px solid #d9c9a8; }
+  .dtab .r > div { padding: 8px 10px; overflow-wrap: anywhere; }
+  .dtab .r.h { background: var(--cd); color: #fff; font-weight: 800; border-top: 0; }
+  .dtab .r:nth-child(even):not(.h) { background: #F3EBD6; }
+  .datt { background: #FDE3DD; border: 2px solid #A8321F; border-radius: 12px; padding: 12px 14px; font-size: 14.5px; line-height: 1.45; margin: 12px 0; break-inside: avoid; }
+  .datt b { color: #8a2414; display: block; }
+  .dnote { background: #E8EEF5; border: 2px dashed #5B6B7A; border-radius: 12px; padding: 12px 14px; font-size: 14px; line-height: 1.45; margin: 16px 0; break-inside: avoid; }
+  .dst { background: #E3F1E8; border-radius: 12px; padding: 12px 14px; font-size: 14.5px; line-height: 1.45; margin: 12px 0; break-inside: avoid; }
+  .dnote ul { margin: 6px 0 0; padding-left: 18px; }
+  .stick { position: sticky; bottom: 0; background: #FBF6EA; border-top: 2px solid #3d2a14; padding: 10px 18px 14px; margin: 18px -18px -18px; }
+  .stick .btn { margin-top: 8px; }
 
   .modal { position: fixed; inset: 0; background: rgba(61,42,20,.55); display: flex; align-items: center; justify-content: center; padding: 14px; z-index: 10; }
-  .modalbox { background: #FBF6EA; border: 3px solid #3d2a14; border-radius: 14px; padding: 14px; width: 100%; max-width: 420px; }
-  .mhead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 18px; }
-  .x { background: #eadfc7; color: #3d2a14; padding: 4px 11px; }
+  .modalbox { background: #FBF6EA; border: 3px solid #3d2a14; border-radius: 16px; width: 100%; max-width: 420px; overflow: hidden; }
+  .mhead { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #3d2a14; color: #fff; font-size: 17px; }
+  .mhead .ib { width: 40px; height: 40px; }
+  #mbody { padding: 14px; }
+  #mbody .card { margin: 10px 0 0; padding: 12px; }
+
+  #stampa { display: none; }
+  @media print {
+    @page { size: A4; margin: 12mm; }
+    body { background: #fff; }
+    .app, .modal { display: none !important; }
+    #stampa { display: block !important; }
+    #stampa .ptit { font-size: 26px; margin: 4px 0 2px; }
+  }
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="banner">STUDIO RIPASSO</div>
+  <div id="bar"></div>
   <main id="main">Carico…</main>
-  <footer>
-    <button id="btnAdulto" class="link">🔒 Area adulto</button>
-    <button id="btnEsci" class="link hidden">Esci</button>
-  </footer>
 </div>
 
-<div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Area adulto">
   <div class="modalbox">
-    <div class="mhead"><b>🔒 Area adulto</b><button id="mclose" class="x" aria-label="Chiudi">✕</button></div>
+    <div class="mhead"><b>Area adulto</b><button id="mclose" class="ib" aria-label="Chiudi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <div id="mbody"></div>
   </div>
 </div>
+<div id="stampa"></div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
@@ -87,11 +125,14 @@
     'Scienze': '#E8782A', 'Storia': '#1F6F6B', "Storia dell'arte": '#3F7D5A', 'Tecnologia': '#5B6B7A'
   };
   var MAX_ALLEGATI = 4;
+  var ICONE = {
+    indietro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+    casa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>'
+  };
 
   function $(id) { return document.getElementById(id); }
   var main = $('main');
 
-  /* ---- memoria di sessione (se il browser la blocca, si va avanti senza) ---- */
   function leggi(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
   function scrivi(k, v) { try { if (v == null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) {} }
 
@@ -100,9 +141,12 @@
   var stato = null;
   var pinCorrente = null;
   var bozza = nuovaBozza();
+  var gen = null;          // generazione del riassunto in corso
+  var timerId = null;
 
   function nuovaBozza() { return { materia: null, testo: '', allegati: [] }; }
   function pad(n) { return ('00' + n).slice(-3); }
+  function colore(m) { return COLORI[m] || '#2E8B57'; }
 
   /* ---- costruzione sicura degli elementi (nessun testo esterno diventa HTML) ---- */
   function h(tag, attrs) {
@@ -113,15 +157,45 @@
       else if (k.indexOf('on') === 0) el.addEventListener(k.slice(2), a[k]);
       else el.setAttribute(k, a[k]);
     });
-    for (var i = 2; i < arguments.length; i++) {
-      var c = arguments[i];
-      if (c == null || c === false) continue;
+    function aggiungi(c) {
+      if (c == null || c === false) return;
+      if (Array.isArray(c)) { c.forEach(aggiungi); return; }
       el.appendChild(c.nodeType ? c : document.createTextNode(String(c)));
     }
+    for (var i = 2; i < arguments.length; i++) aggiungi(arguments[i]);
     return el;
   }
   function svuota(el) { while (el.firstChild) el.removeChild(el.firstChild); }
-  function mostra(el) { svuota(main); main.appendChild(el); }
+  function iconaBtn(svg, etichetta, fn) {
+    var b = h('button', { class: 'ib', 'aria-label': etichetta, onclick: fn });
+    b.innerHTML = svg; // icone fisse scritte qui, mai testo esterno
+    return b;
+  }
+
+  /* ---- barra in alto: indietro, titolo, home ---- */
+  // o = { titolo, mat (colore materia), indietro: fn, home: fn, destra: elemento }
+  function barra(o) {
+    var b = $('bar');
+    svuota(b);
+    o = o || {};
+    b.className = o.mat ? 'col' : '';
+    b.style.setProperty('--b', o.mat ? 'color-mix(in srgb, ' + colore(o.mat) + ' 78%, #000)' : '#FBF6EA');
+    if (o.indietro) b.appendChild(iconaBtn(ICONE.indietro, 'Indietro', o.indietro));
+    if (o.logo) {
+      var ic = h('i'); ic.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13H5z"/><path d="M8.5 13l2.5 2.5 4.5-5"/></svg>';
+      b.appendChild(h('div', { class: 'logo' }, ic, 'Studio Ripasso'));
+    } else {
+      b.appendChild(h('div', { class: 't' }, o.titolo || ''));
+    }
+    if (o.destra) b.appendChild(o.destra);
+    if (o.home) b.appendChild(iconaBtn(ICONE.casa, 'Home', o.home));
+  }
+  function mostra(el, opzioni) {
+    if (timerId) { clearInterval(timerId); timerId = null; }
+    barra(opzioni);
+    svuota(main); main.appendChild(el);
+    window.scrollTo(0, 0);
+  }
 
   /* ---- comunicazione con il proxy ---- */
   function chiama(req) {
@@ -159,10 +233,8 @@
 
   function avviaGoogle() {
     window.google.accounts.id.initialize({
-      client_id: CONFIG.CLIENT_ID,
-      callback: alleCredenziali,
-      auto_select: true,
-      cancel_on_tap_outside: false
+      client_id: CONFIG.CLIENT_ID, callback: alleCredenziali,
+      auto_select: true, cancel_on_tap_outside: false
     });
     googlePronto = true;
   }
@@ -173,20 +245,16 @@
     scrivi('idt', idToken);
     scrivi('idt_t', String(tokenOra));
     main.textContent = 'Carico…';
-    caricaStato().then(function () {
-      $('btnEsci').classList.remove('hidden');
-      mostraHome();
-    }).catch(function (e) { gestisciErrore(e, true); });
+    caricaStato().then(mostraHome).catch(function (e) { gestisciErrore(e, true); });
   }
 
   function schermataLogin(messaggio) {
-    $('btnEsci').classList.add('hidden');
-    var box = h('div', { class: 'box center' },
-      h('h2', {}, 'Ciao! 👋'),
+    var box = h('div', { class: 'card center' },
+      h('h1', {}, 'Ciao!'),
       h('p', {}, 'Entra con il tuo account Google per studiare.'),
       messaggio ? h('p', { class: 'err' }, messaggio) : null,
-      h('div', { id: 'gbtn', class: 'row', style: 'justify-content:center' }));
-    mostra(box);
+      h('div', { id: 'gbtn', style: 'display:flex;justify-content:center;margin-top:10px' }));
+    mostra(box, { logo: true });
     if (googlePronto) {
       window.google.accounts.id.renderButton($('gbtn'),
         { theme: 'filled_blue', size: 'large', text: 'signin_with', locale: 'it' });
@@ -203,49 +271,73 @@
         : 'Questo account non è autorizzato a usare l\'app.');
       return;
     }
-    mostra(h('div', { class: 'box center' },
+    mostra(h('div', { class: 'card center' },
       h('p', { class: 'err' }, 'Non riesco a collegarmi. Controlla internet e riprova.'),
-      h('button', { onclick: function () { main.textContent = 'Carico…'; avvio(); } }, 'Riprova')));
+      h('button', { class: 'btn', onclick: function () { main.textContent = 'Carico…'; avvio(); } }, 'Riprova')),
+      { logo: true });
   }
 
-  /* ---- home: nuovo argomento ---- */
-  function mostraHome() {
-    if (stato && stato.aperto) { mostraRiassunto(); return; }
+  function esci() {
+    idToken = null; scrivi('idt', null); scrivi('idt_t', null);
+    stato = null; gen = null;
+    if (googlePronto) window.google.accounts.id.disableAutoSelect();
+    schermataLogin();
+  }
 
-    var chips = h('div', { class: 'chips' });
+  /* ---- home: nuovo argomento oppure argomento in corso ---- */
+  function mostraHome() {
+    var esciBtn = h('button', { class: 'link', onclick: esci }, 'Esci');
+    var opz = { logo: true, destra: esciBtn };
+    var pieDiPagina = h('div', { class: 'center' },
+      h('button', { class: 'link', onclick: apriAdulto }, 'Area adulto'));
+
+    if (stato && stato.aperto) {
+      var a = stato.aperto;
+      var c = h('div', { class: 'card' },
+        h('span', { class: 'badge', style: 'background:' + colore(a.materia) }, a.materia + ' · Mappa ' + pad(a.numero)),
+        h('h1', {}, a.titolo),
+        h('p', {}, a.stato === 'pausa' ? 'Sei in pausa di studio.' : 'Hai un argomento in corso.'),
+        h('button', { class: 'btn', onclick: continuaArgomento }, 'Continua'));
+      mostra(h('div', {}, h('p', {}, 'Ciao! Finisci questo argomento prima di iniziarne un altro.'), c, pieDiPagina), opz);
+      return;
+    }
+
+    var griglia = h('div', { class: 'mat' });
     Object.keys(COLORI).forEach(function (m) {
-      var b = h('button', { class: 'chip' + (bozza.materia === m ? ' on' : ''), style: '--c:' + COLORI[m],
+      griglia.appendChild(h('button', { class: 'm' + (bozza.materia === m ? ' on' : ''), style: '--c:' + COLORI[m],
         onclick: function () {
           bozza.materia = m;
-          Array.prototype.forEach.call(chips.children, function (c) { c.classList.toggle('on', c.textContent === m); });
-        } }, m);
-      chips.appendChild(b);
+          Array.prototype.forEach.call(griglia.children, function (b) { b.classList.toggle('on', b.textContent === m); });
+        } }, m));
     });
 
-    var txt = h('textarea', { id: 'txt', placeholder: 'Scrivi qui, oppure premi il microfono e detta…' });
+    var txt = h('textarea', { placeholder: 'Scrivi o incolla qui il testo da studiare…' });
     txt.value = bozza.testo;
     txt.addEventListener('input', function () { bozza.testo = txt.value; });
 
-    var micMsg = h('div', { class: 'small', id: 'micmsg' });
-    var btnMic = h('button', { class: 'sec', id: 'mic', onclick: function () { dettatura(btnMic, txt, micMsg); } }, '🎤 Detta');
+    var micMsg = h('div', { class: 'small' });
+    var btnMic = h('button', { onclick: function () { dettatura(btnMic, txt, micMsg); } }, 'Detta');
     var inFoto = h('input', { type: 'file', accept: 'image/*', capture: 'environment', class: 'hidden',
       onchange: function () { aggiungiFile(inFoto, lista, msg); } });
     var inFile = h('input', { type: 'file', accept: 'image/*,application/pdf', multiple: 'multiple', class: 'hidden',
       onchange: function () { aggiungiFile(inFile, lista, msg); } });
-    var lista = h('div', { class: 'row', id: 'lista' });
-    var msg = h('p', { class: 'err hidden', id: 'msg' });
-    var crea = h('button', { class: 'big', id: 'crea', onclick: function () { creaRiassunto(crea, msg); } }, 'Crea il riassunto');
+    var lista = h('div', {});
+    var msg = h('p', { class: 'err hidden' });
+    var crea = h('button', { class: 'btn', onclick: function () { avviaGenerazione(msg); } }, 'Crea il riassunto');
 
-    var box = h('div', { class: 'box' },
-      h('span', { class: 'step' }, '1. Che materia è?'), chips,
-      h('span', { class: 'step' }, '2. Cosa hai studiato?'), txt,
-      h('div', { class: 'row' },
-        btnMic,
-        h('button', { class: 'sec', onclick: function () { inFoto.click(); } }, '📷 Foto'),
-        h('button', { class: 'sec', onclick: function () { inFile.click(); } }, '📎 File')),
-      inFoto, inFile, micMsg, lista, msg, crea);
-    mostra(box);
+    mostra(h('div', {},
+      h('p', {}, 'Ciao! Scegli la materia e dammi il materiale da studiare.'),
+      h('span', { class: 'lbl' }, '1 · MATERIA'), griglia,
+      h('span', { class: 'lbl' }, '2 · MATERIALE'), txt,
+      h('div', { class: 'tri' }, btnMic,
+        h('button', { onclick: function () { inFoto.click(); } }, 'Foto'),
+        h('button', { onclick: function () { inFile.click(); } }, 'File / PDF')),
+      inFoto, inFile, micMsg, lista, msg, crea, pieDiPagina), opz);
     disegnaAllegati(lista);
+  }
+
+  function continuaArgomento() {
+    if (stato.aperto.stato === 'pausa') mostraPausa(); else mostraRiassunto();
   }
 
   function mostraMsg(msg, testo) {
@@ -300,8 +392,8 @@
   function disegnaAllegati(lista) {
     svuota(lista);
     bozza.allegati.forEach(function (a, i) {
-      lista.appendChild(h('span', { class: 'att' }, (a.mime === 'application/pdf' ? '📄 ' : '🖼️ ') + a.nome,
-        h('button', { 'aria-label': 'Togli', onclick: function () { bozza.allegati.splice(i, 1); disegnaAllegati(lista); } }, '✕')));
+      lista.appendChild(h('span', { class: 'att' }, a.nome,
+        h('button', { 'aria-label': 'Togli ' + a.nome, onclick: function () { bozza.allegati.splice(i, 1); disegnaAllegati(lista); } }, 'togli')));
     });
   }
 
@@ -322,50 +414,190 @@
         }
       }
     };
-    rec.onstart = function () { inAscolto = true; btn.textContent = '⏹ Stop'; micMsg.textContent = 'Sto ascoltando…'; };
-    rec.onend = function () { inAscolto = false; btn.textContent = '🎤 Detta'; micMsg.textContent = ''; };
+    rec.onstart = function () { inAscolto = true; btn.textContent = 'Stop'; micMsg.textContent = 'Sto ascoltando…'; };
+    rec.onend = function () { inAscolto = false; btn.textContent = 'Detta'; micMsg.textContent = ''; };
     rec.onerror = function () { micMsg.textContent = 'Microfono non disponibile o permesso negato.'; };
     rec.start();
   }
 
-  /* ---- richiesta del riassunto ---- */
-  function creaRiassunto(btn, msg) {
+  /* ---- generazione del riassunto: indice, poi una sezione alla volta ---- */
+  function materiale() {
+    return { materia: gen.materia, testo: gen.testo,
+      immagini: gen.allegati.map(function (a) { return { mime: a.mime, data: a.data }; }) };
+  }
+
+  function avviaGenerazione(msg) {
     mostraMsg(msg, '');
     if (!bozza.materia) { mostraMsg(msg, 'Scegli prima la materia.'); return; }
     var testo = bozza.testo.trim();
     if (!testo && !bozza.allegati.length) { mostraMsg(msg, 'Scrivi, detta o carica qualcosa da studiare.'); return; }
+    gen = { materia: bozza.materia, testo: testo, allegati: bozza.allegati.slice(), indice: null, sezioni: [], errori: 0 };
+    avanza();
+  }
 
-    btn.disabled = true;
-    btn.textContent = 'Sto preparando il riassunto… può servire un po\' di pazienza.';
-    chiama({
-      task: 'riassunto', materia: bozza.materia, testo: testo,
-      immagini: bozza.allegati.map(function (a) { return { mime: a.mime, data: a.data }; })
-    }).then(function (j) {
-      if (j.ok) { stato.aperto = j.argomento; bozza = nuovaBozza(); mostraRiassunto(); return; }
-      btn.disabled = false; btn.textContent = 'Crea il riassunto';
-      if (j.blocked || j.error === 'limite_giornaliero') { mostraMsg(msg, j.messaggio); return; }
-      if (j.error === 'argomento_aperto') { return caricaStato().then(mostraHome); }
-      mostraMsg(msg, 'Qualcosa non ha funzionato. Riprova tra poco.');
-    }).catch(function (e) {
+  function schermataGenera(testoStato, perc, errore) {
+    var corpo = h('div', { class: 'card center' },
+      h('h1', {}, 'Preparo il tuo riassunto'),
+      h('p', {}, testoStato),
+      h('div', { class: 'prog' }, h('div', { style: 'width:' + perc + '%' })),
+      h('p', { class: 'small' }, 'Più il materiale è lungo, più ci vuole: resta qui finché non ho finito.'));
+    if (errore) {
+      corpo.appendChild(h('p', { class: 'err' }, errore.testo));
+      if (errore.riprova) corpo.appendChild(h('button', { class: 'btn', onclick: avanza }, 'Riprova'));
+      corpo.appendChild(h('button', { class: 'btn sec', onclick: function () { gen = null; mostraHome(); } }, 'Torna indietro'));
+    }
+    mostra(corpo, { titolo: gen.materia + ' · riassunto', mat: gen.materia });
+  }
+
+  function erroreGen(j) {
+    var tot = gen.indice ? gen.indice.sezioni.length : 0;
+    var perc = tot ? Math.round(100 * gen.sezioni.length / (tot + 1)) : 3;
+    if (j && (j.blocked || j.error === 'limite_giornaliero')) {
+      schermataGenera('Non posso andare avanti.', perc, { testo: j.messaggio, riprova: false });
+    } else if (j && j.error === 'argomento_aperto') {
+      gen = null; caricaStato().then(mostraHome);
+    } else {
+      schermataGenera('Qualcosa non ha funzionato.', perc,
+        { testo: 'Riprova: il lavoro già fatto non va perso.', riprova: true });
+    }
+  }
+
+  function avanza() {
+    if (!gen) return;
+    var passo;
+    var tot = gen.indice ? gen.indice.sezioni.length : 0;
+    if (!gen.indice) {
+      schermataGenera('Leggo il materiale e preparo l\'indice…', 3);
+      passo = chiama(Object.assign({ task: 'indice' }, materiale())).then(function (j) {
+        if (!j.ok) throw j;
+        gen.indice = j;
+      });
+    } else if (gen.sezioni.length < tot) {
+      var n = gen.sezioni.length + 1;
+      schermataGenera('Scrivo la parte ' + n + ' di ' + tot + ': ' + gen.indice.sezioni[n - 1].titolo,
+        Math.round(100 * (n - 1) / (tot + 1)) + 5);
+      passo = chiama(Object.assign({ task: 'sezione', numero: n,
+        indice: gen.indice.sezioni.map(function (s) { return s.titolo; }) }, materiale())).then(function (j) {
+        if (!j.ok) throw j;
+        gen.sezioni.push(j.sezione);
+      });
+    } else {
+      schermataGenera('Salvo il riassunto…', 97);
+      passo = chiama({ task: 'chiudi_riassunto', materia: gen.materia, titolo: gen.indice.titolo,
+        introduzione: gen.indice.introduzione, come_studiare: gen.indice.come_studiare,
+        sezioni: gen.sezioni }).then(function (j) {
+        if (!j.ok) throw j;
+        stato.aperto = j.argomento; gen = null; bozza = nuovaBozza(); mostraRiassunto();
+      });
+    }
+    passo.then(function () { if (gen) avanza(); }).catch(function (e) {
       if (e && e.codice === 'auth') { gestisciErrore(e, false); return; }
-      btn.disabled = false; btn.textContent = 'Crea il riassunto';
-      mostraMsg(msg, 'Non riesco a collegarmi. Controlla internet e riprova.');
+      erroreGen(e);
     });
+  }
+
+  /* ---- disegno del riassunto (stesso per schermo e per stampa) ---- */
+  function leggiDoc(a) {
+    try {
+      var d = JSON.parse(a.riassunto);
+      if (d && Array.isArray(d.sezioni)) return d;
+    } catch (e) {}
+    return { titolo: a.titolo, introduzione: '', come_studiare: '', sezioni: [{ titolo: 'Riassunto', blocchi:
+      String(a.riassunto || '').split(/\n+/).filter(function (p) { return p.trim(); })
+        .map(function (p) { return { tipo: 'paragrafo', testo: p }; }), note: [] }] };
+  }
+
+  function disegnaDoc(doc, materia) {
+    var d = h('div', { class: 'doc', style: '--cd:color-mix(in srgb, ' + colore(materia) + ' 82%, #000)' });
+    if (doc.introduzione) d.appendChild(h('div', { class: 'dint' }, h('b', {}, 'Per studiare: '), doc.introduzione));
+    var note = [];
+    doc.sezioni.forEach(function (s) {
+      d.appendChild(h('div', { class: 'dsez' }, s.titolo));
+      s.blocchi.forEach(function (b) {
+        if (b.tipo === 'paragrafo') d.appendChild(h('p', { class: 'dp' }, b.testo));
+        else if (b.tipo === 'attenzione') d.appendChild(h('div', { class: 'datt' }, h('b', {}, 'ATTENZIONE'), b.testo));
+        else if (b.tipo === 'elenco') {
+          var e = h('div', { class: 'del' }, b.testo ? h('b', { class: 'tt' }, b.testo) : null);
+          b.voci.forEach(function (v) { e.appendChild(h('div', { class: 'v' }, h('i'), h('span', {}, v))); });
+          d.appendChild(e);
+        } else if (b.tipo === 'tabella') {
+          var t = h('div', { class: 'dtab', style: '--n:' + b.colonne.length });
+          t.appendChild(h('div', { class: 'r h' }, b.colonne.map(function (c) { return h('div', {}, c); })));
+          b.righe.forEach(function (r) {
+            var cel = [];
+            for (var i = 0; i < b.colonne.length; i++) cel.push(h('div', {}, r.celle[i] || ''));
+            t.appendChild(h('div', { class: 'r' }, cel));
+          });
+          d.appendChild(t);
+        }
+      });
+      (s.note || []).forEach(function (n) { if (note.indexOf(n) < 0) note.push(n); });
+    });
+    if (note.length) {
+      var u = h('ul', {});
+      note.forEach(function (n) { u.appendChild(h('li', {}, n)); });
+      d.appendChild(h('div', { class: 'dnote' }, h('b', {}, 'Note sulla qualità'), u));
+    }
+    if (doc.come_studiare) d.appendChild(h('div', { class: 'dst' }, h('b', {}, 'Come studiare: '), doc.come_studiare));
+    return d;
   }
 
   /* ---- schermata del riassunto ---- */
   function mostraRiassunto() {
     var a = stato.aperto;
-    var box = h('div', { class: 'box' },
-      h('span', { class: 'badge', style: 'background:' + (COLORI[a.materia] || '#D9822B') },
-        a.materia + ' · Mappa ' + pad(a.numero)),
-      h('h2', {}, a.titolo));
-    a.riassunto.split(/\n+/).filter(function (p) { return p.trim(); }).forEach(function (p) {
-      box.appendChild(h('p', { class: 'riass' }, p));
-    });
-    box.appendChild(h('p', { class: 'small' },
-      'Leggilo con calma. Il timer di studio e le card arrivano nel prossimo aggiornamento.'));
-    mostra(box);
+    var doc = leggiDoc(a);
+    var pdf = h('button', { class: 'btn sec', onclick: function () { scaricaPdf(a, doc); } }, 'Scarica il PDF (A4)');
+    var pausa = h('button', { class: 'btn', onclick: function () {
+      if (!window.confirm('Hai letto tutto? Parte la pausa di studio di ' + stato.timerMin + ' minuti.')) return;
+      pausa.disabled = true;
+      chiama({ task: 'timer_avvia' }).then(function (j) {
+        if (j.ok) { a.stato = 'pausa'; a.pausaFine = j.pausaFine; a.adesso = j.adesso; mostraPausa(); return; }
+        pausa.disabled = false;
+      }).catch(function (e) { pausa.disabled = false; if (e && e.codice === 'auth') gestisciErrore(e, false); });
+    } }, 'Ho letto: inizia la pausa');
+    var corpo = h('div', {},
+      h('span', { class: 'badge', style: 'background:color-mix(in srgb,' + colore(a.materia) + ' 82%, #000)' }, 'RIASSUNTO'),
+      h('h1', {}, a.titolo),
+      disegnaDoc(doc, a.materia),
+      h('div', { class: 'stick' }, pdf, pausa));
+    mostra(corpo, { titolo: a.materia + ' · Mappa ' + pad(a.numero), mat: a.materia, indietro: mostraHome, home: mostraHome });
+  }
+
+  function scaricaPdf(a, doc) {
+    var s = $('stampa');
+    svuota(s);
+    s.appendChild(h('div', { class: 'small' }, a.materia + ' · Mappa ' + pad(a.numero)));
+    s.appendChild(h('h1', { class: 'ptit' }, a.titolo));
+    s.appendChild(disegnaDoc(doc, a.materia));
+    var vecchio = document.title;
+    document.title = a.materia + ' ' + pad(a.numero) + ' - ' + a.titolo;
+    window.print(); // sul telefono o sul PC: scegli "Salva come PDF"
+    document.title = vecchio;
+  }
+
+  /* ---- pausa di studio ---- */
+  function mostraPausa() {
+    var a = stato.aperto;
+    var scarto = (a.adesso || Date.now()) - Date.now(); // orologio del server meno il mio
+    var tempo = h('b', {}, '--:--');
+    var etich = h('div', { class: 'small' }, 'minuti rimasti');
+    var avviso = h('p', {}, 'Chiudi il libro e fai qualcos\'altro. Quando il tempo finisce arrivano le card di ripasso.');
+    var vai = h('button', { class: 'btn', disabled: 'disabled' }, 'Le card si aprono alla fine');
+    var corpo = h('div', { class: 'center' },
+      h('h1', {}, 'Pausa di studio'), h('div', { class: 'dial' }, tempo, etich), avviso, vai);
+    mostra(corpo, { titolo: a.materia + ' · Mappa ' + pad(a.numero), mat: a.materia, indietro: mostraHome });
+    function giro() {
+      var resto = Math.max(0, Math.round((a.pausaFine - (Date.now() + scarto)) / 1000));
+      if (resto > 0) {
+        tempo.textContent = ('0' + Math.floor(resto / 60)).slice(-2) + ':' + ('0' + (resto % 60)).slice(-2);
+      } else {
+        tempo.textContent = '00:00'; etich.textContent = 'tempo finito';
+        avviso.textContent = 'Pausa finita! Le card di ripasso arrivano nel prossimo aggiornamento dell\'app.';
+        clearInterval(timerId); timerId = null;
+      }
+    }
+    giro();
+    timerId = setInterval(giro, 1000);
   }
 
   /* ---- area adulto ---- */
@@ -394,7 +626,7 @@
     svuota(corpo);
     var pin = h('input', { type: 'password', inputmode: 'numeric', maxlength: '8', 'aria-label': 'PIN' });
     var msg = h('p', { class: 'err hidden' });
-    var ok = h('button', { onclick: function () {
+    var ok = h('button', { class: 'btn g', onclick: function () {
       ok.disabled = true;
       chiama({ task: 'adulto_verifica', pin: pin.value }).then(function (j) {
         ok.disabled = false;
@@ -408,7 +640,7 @@
     } }, 'Entra');
     pin.addEventListener('keydown', function (e) { if (e.key === 'Enter') ok.click(); });
     corpo.appendChild(h('p', {}, 'Inserisci il PIN.'));
-    corpo.appendChild(h('div', { class: 'row' }, pin, ok));
+    corpo.appendChild(h('div', { style: 'display:flex;gap:10px;align-items:center' }, pin, ok));
     corpo.appendChild(msg);
     setTimeout(function () { pin.focus(); }, 50);
   }
@@ -418,35 +650,27 @@
     svuota(corpo);
     var msg = h('p', { class: 'small' });
     var minuti = h('input', { type: 'number', min: '1', max: '120', value: String(stato.timerMin) });
-    var salva = h('button', { onclick: function () {
+    var salva = h('button', { class: 'btn g', onclick: function () {
       chiama({ task: 'timer_imposta', pin: pinCorrente, minuti: Number(minuti.value) }).then(function (j) {
-        if (j.ok) { stato.timerMin = j.timerMin; msg.className = 'ok'; msg.textContent = 'Timer salvato: ' + j.timerMin + ' minuti.'; return; }
+        if (j.ok) { stato.timerMin = j.timerMin; msg.className = 'okc'; msg.textContent = 'Timer salvato: ' + j.timerMin + ' minuti.'; return; }
         msg.className = 'err'; msg.textContent = testoErrorePin(j);
       }).catch(function () { msg.className = 'err'; msg.textContent = 'Non riesco a collegarmi.'; });
     } }, 'Salva');
-    corpo.appendChild(h('b', {}, 'Pausa di studio (minuti)'));
-    corpo.appendChild(h('div', { class: 'row' }, minuti, salva));
+    corpo.appendChild(h('div', { class: 'card' }, h('b', {}, 'Tempo di pausa prima delle card'),
+      h('div', { style: 'display:flex;gap:10px;align-items:center;margin-top:10px' }, minuti, 'minuti', salva)));
 
     if (stato.aperto) {
-      corpo.appendChild(h('hr', {}));
-      corpo.appendChild(h('p', {}, 'Argomento in corso: ' + stato.aperto.materia + ' ' + pad(stato.aperto.numero) + ' – ' + stato.aperto.titolo));
-      corpo.appendChild(h('button', { class: 'no', onclick: function () {
-        if (!window.confirm('Annullare questo argomento? Il ragazzo potrà iniziarne un altro.')) return;
-        chiama({ task: 'annulla_argomento', pin: pinCorrente }).then(function (j) {
-          if (j.ok) { stato.aperto = null; chiudiAdulto(); mostraHome(); return; }
-          msg.className = 'err'; msg.textContent = testoErrorePin(j);
-        }).catch(function () { msg.className = 'err'; msg.textContent = 'Non riesco a collegarmi.'; });
-      } }, 'Annulla argomento in corso'));
+      corpo.appendChild(h('div', { class: 'card' }, h('b', {}, 'Argomento in corso'),
+        h('p', {}, stato.aperto.materia + ' ' + pad(stato.aperto.numero) + ' – ' + stato.aperto.titolo),
+        h('button', { class: 'btn no', onclick: function () {
+          if (!window.confirm('Annullare questo argomento? Il ragazzo potrà iniziarne un altro.')) return;
+          chiama({ task: 'annulla_argomento', pin: pinCorrente }).then(function (j) {
+            if (j.ok) { stato.aperto = null; chiudiAdulto(); mostraHome(); return; }
+            msg.className = 'err'; msg.textContent = testoErrorePin(j);
+          }).catch(function () { msg.className = 'err'; msg.textContent = 'Non riesco a collegarmi.'; });
+        } }, 'Annulla argomento')));
     }
     corpo.appendChild(msg);
-  }
-
-  /* ---- uscita ---- */
-  function esci() {
-    idToken = null; scrivi('idt', null); scrivi('idt_t', null);
-    stato = null;
-    if (googlePronto) window.google.accounts.id.disableAutoSelect();
-    schermataLogin();
   }
 
   /* ---- avvio ---- */
@@ -454,10 +678,7 @@
     attendiGoogle().then(function (ok) {
       if (ok && !googlePronto) avviaGoogle();
       if (idToken) {
-        return caricaStato().then(function () {
-          $('btnEsci').classList.remove('hidden');
-          mostraHome();
-        }).catch(function (e) {
+        return caricaStato().then(mostraHome).catch(function (e) {
           if (e && e.codice === 'auth') { idToken = null; scrivi('idt', null); schermataLogin(); }
           else gestisciErrore(e, false);
         });
@@ -466,9 +687,7 @@
     });
   }
 
-  $('btnAdulto').addEventListener('click', apriAdulto);
   $('mclose').addEventListener('click', chiudiAdulto);
-  $('btnEsci').addEventListener('click', esci);
 
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
     navigator.serviceWorker.register('sw.js').catch(function () {});
